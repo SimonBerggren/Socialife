@@ -1,0 +1,96 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/Blue</item>
+        <item name="colorPrimaryDark">@color/DarkBlue</item>
+        <item name="colorAccent">@color/LightBlue</item>
+    </style>
+
+    <style name="InputField" parent="android:Widget.EditText">
+        <item name="android:textSize">@dimen/text_size_medium</item>
+        <item name="android:layout_margin">@dimen/margin_small</item>
+        <item name="android:textAlignment">center</item>
+    </style>
+
+    <style name="CustomButton" parent="android:style/Widget.Button">
+        <item name="android:textSize">@dimen/text_size_small_tiny</item>
+        <item name="android:layout_margin">@dimen/margin_tiny</item>
+    </style>
+
+    <style name="GoodButton" parent="CustomButton">
+        <item name="android:background">@color/Green</item>
+    </style>
+
+    <style name="DangerButton" parent="CustomButton">
+        <item name="android:background">@color/LightRed</item>
+    </style>
+
+    <style name="SmallDangerButton" parent="DangerButton">
+        <item name="android:textSize">@dimen/text_size_small</item>
+    </style>
+
+    <style name="SmallGoodButton" parent="GoodButton">
+        <item name="android:textSize">@dimen/text_size_small</item>
+    </style>
+
+    <style name="DarkBlueButton" parent="CustomButton">
+        <item name="android:background">@color/SoftDarkBlue</item>
+    </style>
+
+    <style name="BlueButton" parent="CustomButton">
+        <item name="android:background">@color/SoftBlue</item>
+    </style>
+
+    <style name="LightBlueButton" parent="CustomButton">
+        <item name="android:background">@color/SoftLightBlue</item>
+    </style>
+
+    <style name="DarkBlueButtonLeft" parent="DarkBlueButton">
+        <item name="android:layout_marginTop">@dimen/margin_small</item>
+        <item name="android:layout_marginBottom">@dimen/margin_small</item>
+        <item name="android:layout_marginLeft">@dimen/margin_small</item>
+        <item name="android:layout_marginRight">@dimen/margin_tiny</item>
+    </style>
+
+    <style name="BlueButtonLeft" parent="BlueButton">
+        <item name="android:layout_marginTop">@dimen/margin_small</item>
+        <item name="android:layout_marginBottom">@dimen/margin_small</item>
+        <item name="android:layout_marginLeft">@dimen/margin_small</item>
+        <item name="android:layout_marginRight">@dimen/margin_tiny</item>
+    </style>
+
+    <style name="LightBlueButtonLeft" parent="LightBlueButton">
+        <item name="android:layout_marginTop">@dimen/margin_small</item>
+        <item name="android:layout_marginBottom">@dimen/margin_small</item>
+        <item name="android:layout_marginLeft">@dimen/margin_small</item>
+        <item name="android:layout_marginRight">@dimen/margin_tiny</item>
+    </style>
+
+    <style name="DarkBlueButtonRight" parent="DarkBlueButton">
+        <item name="android:layout_marginTop">@dimen/margin_small</item>
+        <item name="android:layout_marginBottom">@dimen/margin_small</item>
+        <item name="android:layout_marginRight">@dimen/margin_small</item>
+        <item name="android:layout_marginLeft">@dimen/margin_tiny</item>
+    </style>
+
+    <style name="BlueButtonRight" parent="BlueButton">
+        <item name="android:layout_marginTop">@dimen/margin_small</item>
+        <item name="android:layout_marginBottom">@dimen/margin_small</item>
+        <item name="android:layout_marginRight">@dimen/margin_small</item>
+        <item name="android:layout_marginLeft">@dimen/margin_tiny</item>
+    </style>
+
+    <style name="LightBlueButtonRight" parent="LightBlueButton">
+        <item name="android:layout_marginTop">@dimen/margin_small</item>
+        <item name="android:layout_marginBottom">@dimen/margin_small</item>
+        <item name="android:layout_marginRight">@dimen/margin_small</item>
+        <item name="android:layout_marginLeft">@dimen/margin_tiny</item>
+    </style>
+
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+</resources>

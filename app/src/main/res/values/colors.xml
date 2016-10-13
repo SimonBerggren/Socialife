@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    // primary colors
+    <color name="Blue">#45b3e0</color>
+    <color name="DarkBlue">#87ceeb</color>
+    <color name="LightBlue">#c9e9f6</color>
+
+    // transparent colors
+    <color name="SoftBlue">#CC45b3e0</color>
+    <color name="SoftDarkBlue">#CC87ceeb</color>
+    <color name="SoftLightBlue">#CCc9e9f6</color>
+
+    <color name="Green">#63c420</color>
+    <color name="LightGreen">#72ff65</color>
+
+    <color name="Red">#d51930</color>
+    <color name="LightRed">#ff4747</color>
+</resources>
