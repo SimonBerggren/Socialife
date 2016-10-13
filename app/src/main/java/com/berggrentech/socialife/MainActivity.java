@@ -18,6 +18,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.JsonWriter;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -29,11 +30,13 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.io.IOException;
+import java.io.StringWriter;
+
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, OnMapReadyCallback {
 
     private TCPService service;
-    private ListenerThread listener;
     private TCPConnection connection;
 
     @Override
@@ -56,7 +59,12 @@ public class MainActivity extends AppCompatActivity
         mapFragment.getMapAsync(this);
 
         connection = new TCPConnection();
-        boolean result = bindService(new Intent(this, TCPService.class), connection, 0);
+
+        Intent intent = new Intent(this, TCPService.class);
+        startService(intent);
+
+        boolean result = bindService(intent, connection, 0);
+        Log.e("BOUND", String.valueOf(result).toUpperCase());
     }
 
     @Override
@@ -118,9 +126,24 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.slider_left_chat) {
+            service.disconnect();
         } else if (id == R.id.slider_left_profile) {
+            service.connect();
         } else if (id == R.id.slider_left_settings) {
-            service.send("hello");
+
+            try {
+                StringWriter stringWriter = new StringWriter();
+                JsonWriter writer = new JsonWriter(stringWriter);
+                writer.beginObject()
+                        .name("type").value("register")
+                        .name("group").value(" ")
+                        .name("member").value("Simon")
+                        .endObject();
+                String res = stringWriter.toString();
+                service.send(res);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -132,33 +155,9 @@ public class MainActivity extends AppCompatActivity
         public void onServiceConnected(ComponentName arg0, IBinder binder) {
             TCPService.LocalService ls = (TCPService.LocalService) binder;
             service = ls.getService();
-            listener = new ListenerThread();
-            listener.start();
-            Log.e("SIMON SAYS", "CONNECTED");
         }
 
         public void onServiceDisconnected(ComponentName arg0) {
-        }
-    }
-
-    private class ListenerThread extends Thread {
-        public void stopListener() {
-            interrupt();
-            listener = null;
-        }
-
-        public void run() {
-            String message;
-            Exception exception;
-            while (listener != null) {
-                try {
-                    message = service.receive();
-                    Log.e("SERVER MESSAGE", message);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                    listener = null;
-                }
-            }
         }
     }
 }

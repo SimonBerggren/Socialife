@@ -38,18 +38,18 @@ class LoginTask extends AsyncTask<Void, Void, Boolean> {
 
     @Override
     protected void onPostExecute(final Boolean success) {
+
         mActivity.showProgress(false);
 
-        if(success) {
+        if(success)
             mActivity.loginSuccess();
-        }
-        else
-            Toast.makeText(mActivity, "Login was not successful", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     protected void onCancelled() {
+
         mActivity.showProgress(false);
         Toast.makeText(mActivity, "Login was cancelled", Toast.LENGTH_SHORT).show();
+
     }
 }
