@@ -28,6 +28,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.IOException;
@@ -37,7 +38,6 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, OnMapReadyCallback {
 
     private TCPService service;
-    private TCPConnection connection;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,13 +58,13 @@ public class MainActivity extends AppCompatActivity
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        connection = new TCPConnection();
+        TCPConnection connection = new TCPConnection();
 
         Intent intent = new Intent(this, TCPService.class);
         startService(intent);
 
-        boolean result = bindService(intent, connection, 0);
-        Log.e("BOUND", String.valueOf(result).toUpperCase());
+        bindService(intent, connection, 0);
+
     }
 
     @Override
@@ -81,11 +81,8 @@ public class MainActivity extends AppCompatActivity
                 return;
             }
         }
+
         googleMap.setMyLocationEnabled(true);
-        // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(56, 13);
-        googleMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        googleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
     }
 
     @Override
@@ -126,7 +123,7 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.slider_left_chat) {
-            service.disconnect();
+            
         } else if (id == R.id.slider_left_profile) {
             service.connect();
         } else if (id == R.id.slider_left_settings) {
@@ -136,11 +133,32 @@ public class MainActivity extends AppCompatActivity
                 JsonWriter writer = new JsonWriter(stringWriter);
                 writer.beginObject()
                         .name("type").value("register")
-                        .name("group").value(" ")
+                        .name("group").value("MyGroup")
                         .name("member").value("Simon")
                         .endObject();
                 String res = stringWriter.toString();
                 service.send(res);
+
+                stringWriter = new StringWriter();
+                writer = new JsonWriter(stringWriter);
+                writer.beginObject()
+                        .name("type").value("register")
+                        .name("group").value("MyGroup")
+                        .name("member").value("Alex")
+                        .endObject();
+                res = stringWriter.toString();
+                service.send(res);
+
+                stringWriter = new StringWriter();
+                writer = new JsonWriter(stringWriter);
+                writer.beginObject()
+                        .name("type").value("register")
+                        .name("group").value("MyGroup")
+                        .name("member").value("Robin")
+                        .endObject();
+                res = stringWriter.toString();
+                service.send(res);
+
             } catch (IOException e) {
                 e.printStackTrace();
             }

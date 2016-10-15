@@ -23,4 +23,5 @@ class Utils {
     static void Log(int _Msg) {
         Log.w("Simon says", String.valueOf(_Msg));
     }
+
 }

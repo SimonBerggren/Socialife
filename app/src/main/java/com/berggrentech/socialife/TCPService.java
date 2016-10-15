@@ -30,7 +30,6 @@ public class TCPService extends Service {
     String groups = "groups";
     String location = "location";
     String locations = "locations";
-    String exception = "exception";
 
     public static final String IP="195.178.227.53";
     public static final int PORT=7117; //

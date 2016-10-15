@@ -11,6 +11,7 @@
     tools:context="com.berggrentech.socialife.LoginActivity"
     android:animateLayoutChanges="true"
     >
+
     <ScrollView
         android:id="@+id/login_form"
         android:layout_width="match_parent"
@@ -25,7 +26,6 @@
             <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/emid"
                 >
                 <AutoCompleteTextView
                     android:id="@+id/username"
@@ -58,6 +58,14 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/login"
+                    />
+                <Spinner
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:id="@+id/groups_spinner"
+                    android:layout_weight="1"
+                    style="@style/Base.Widget.AppCompat.Button"
+
                     />
             </LinearLayout>
         </LinearLayout>

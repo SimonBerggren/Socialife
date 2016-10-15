@@ -14,8 +14,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.Spinner;
+import android.widget.TextView;
 
 /**
  * A login screen that offers login via email/password.
@@ -49,6 +53,36 @@ public class LoginActivity extends AppCompatActivity {
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item) {
+
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+
+                View v = super.getView(position, convertView, parent);
+                if (position == getCount()) {
+                    ((TextView)v.findViewById(android.R.id.text1)).setText("");
+                    ((TextView)v.findViewById(android.R.id.text1)).setHint(getItem(getCount())); //"Hint to be displayed"
+                }
+
+                return v;
+            }
+
+            @Override
+            public int getCount() {
+                return super.getCount()-1; // you dont display last item. It is used as hint.
+            }
+
+        };
+
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        adapter.add("Groups");
+        adapter.add("Item 1");
+        adapter.add("Item 2");
+
+
+        Spinner spinner = (Spinner) findViewById(R.id.groups_spinner);
+        spinner.setAdapter(adapter);
     }
 
     /**
