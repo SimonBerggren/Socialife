@@ -4,7 +4,7 @@ package com.berggrentech.socialife;
  * Created by Simon Berggren for assignment 2 in the course Development of Mobile Devices.
  */
 
-class ThreadPool {
+class TaskManager {
     private Buffer<Runnable> tasks = new Buffer<>();
     private WorkerThread worker;
 
@@ -22,7 +22,7 @@ class ThreadPool {
         }
     }
 
-    void execute(Runnable runnable) {
+    void addTask(Runnable runnable) {
         tasks.insert(runnable);
     }
 

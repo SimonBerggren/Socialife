@@ -19,17 +19,12 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.JsonWriter;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -47,23 +42,17 @@ public class MainActivity extends AppCompatActivity
         NavigationView view = (NavigationView) findViewById(R.id.nav_view);
         view.setNavigationItemSelectedListener(this);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        //Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        //setSupportActionBar(toolbar);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+                this, drawer, null, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         toggle.syncState();
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        TCPConnection connection = new TCPConnection();
-
-        Intent intent = new Intent(this, TCPService.class);
-        startService(intent);
-
-        bindService(intent, connection, 0);
 
     }
 
@@ -169,13 +158,5 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    private class TCPConnection implements ServiceConnection {
-        public void onServiceConnected(ComponentName arg0, IBinder binder) {
-            TCPService.LocalService ls = (TCPService.LocalService) binder;
-            service = ls.getService();
-        }
 
-        public void onServiceDisconnected(ComponentName arg0) {
-        }
-    }
 }

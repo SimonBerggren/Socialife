@@ -1,10 +1,12 @@
 package com.berggrentech.socialife;
 
+import android.app.ListActivity;
 import android.app.Service;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Binder;
 import android.os.IBinder;
-import android.util.JsonReader;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -13,16 +15,37 @@ import org.json.JSONObject;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.StringReader;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Simon Berggren for assignment 2 in the course Development of Mobile Devices.
  */
 
 public class TCPService extends Service {
+
+    public static class Connection implements ServiceConnection {
+
+        TCPService service;
+
+        public TCPService getService() {
+            return service;
+        }
+
+        public void onServiceConnected(ComponentName arg0, IBinder binder) {
+            TCPService.LocalService ls = (TCPService.LocalService) binder;
+            service = ls.getService();
+            service.connect();
+        }
+
+        public void onServiceDisconnected(ComponentName arg0) {
+        }
+    }
+
+    public static ArrayList<String> grpList;
 
     String register = "register";
     String unregister = "unregister";
@@ -35,8 +58,8 @@ public class TCPService extends Service {
     public static final int PORT=7117; //
 
     private Socket socket;
-    private ThreadPool oThread;
-    private ThreadPool iThread;
+    private TaskManager oThread;
+    private TaskManager iThread;
     private DataInputStream iStream;
     private DataOutputStream oStream;
     private volatile boolean running = false;
@@ -44,8 +67,8 @@ public class TCPService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         socket = new Socket();
-        oThread = new ThreadPool();
-        iThread = new ThreadPool();
+        oThread = new TaskManager();
+        iThread = new TaskManager();
         return Service.START_STICKY;
     }
 
@@ -63,7 +86,7 @@ public class TCPService extends Service {
 
         // start thread handling output, sending messages to server
         oThread.start();
-        oThread.execute(new Runnable() {
+        oThread.addTask(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -76,7 +99,7 @@ public class TCPService extends Service {
                     // start thread handling input, reading messages from server
                     // needs to happen after iStream has been initialized
                     iThread.start();
-                    iThread.execute(new Runnable() {
+                    iThread.addTask(new Runnable() {
 
                         @Override
                         public void run() {
@@ -89,6 +112,7 @@ public class TCPService extends Service {
                                     String type = obj.getString("type");
 
                                     Log.e("RECEIVED FROM SERVER", obj.toString());
+                                    Log.e("TYPE FROM SERVER", type);
 
                                     if(type.equals(register)) {
 
@@ -106,21 +130,20 @@ public class TCPService extends Service {
                                         JSONArray groups = obj.getJSONArray("groups");
 
                                         if(groups.length() == 0) {
-                                            Log.w("RECEIVED FROM SERVER", "THERE ARE NO GROUPS");
+                                            Log.e("RECEIVED FROM SERVER", "THERE ARE NO GROUPS");
+                                       } else {
+                                            Log.e("RECEIVED FROM SERVER", String.valueOf(groups.length()) + " GROUPS FOUND");
                                         }
 
+                                        grpList = new ArrayList<String>();
+
                                         for (int i = 0; i < groups.length(); ++i) {
+                                            Log.e("JNIPOUSDFJHOIJHSD", "fdsöjofrndsahfhdsaökl");
+
                                             JSONObject group = groups.getJSONObject(i);
                                             String name = group.getString("group");
-                                            JSONArray members = group.getJSONArray("members");
-
+                                            grpList.add(name);
                                             Log.e("JSON Group Name", name);
-
-                                            for (int j = 0; j < groups.length(); ++j) {
-                                                JSONObject member = members.getJSONObject(j);
-
-                                                Log.e("JSON Member Name", member.getString("member"));
-                                            }
                                         }
                                     } else if(type.equals(location)) {
                                         // ignore
@@ -140,13 +163,12 @@ public class TCPService extends Service {
             }
         });
     }
-
     /**
      * Disconnects from the server.
      * Closes all streams and sockets.
      * Stops all threads.
      */
-    public void disconnect() {  oThread.execute(new Runnable() {
+    public void disconnect() {  oThread.addTask(new Runnable() {
 
             @Override
             public void run() {
@@ -172,7 +194,7 @@ public class TCPService extends Service {
     /**
      * Sends a message to the server.
      */
-    public void send(final String message) { oThread.execute(new Runnable() {
+    public void send(final String message) { oThread.addTask(new Runnable() {
             @Override
             public void run() {
                 try {
