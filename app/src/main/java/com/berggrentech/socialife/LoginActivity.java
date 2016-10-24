@@ -1,61 +1,37 @@
 package com.berggrentech.socialife;
 
 import android.Manifest;
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.app.AlertDialog;
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.location.LocationManager;
-import android.net.ConnectivityManager;
-import android.os.Handler;
-import android.os.Looper;
-import android.support.annotation.MainThread;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
 
 import android.os.Bundle;
-import android.util.JsonWriter;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.Spinner;
-import android.widget.TextView;
-import android.widget.Toast;
 
-import org.json.JSONArray;
-
-import java.io.IOException;
-import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
-/**
- * A login screen that offers login via email/password.
- */
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends ActivityListener {
 
-    /**
-     * Keep track of the login task to ensure we can cancel it if requested.
-     */
     private AutoCompleteTextView mUsernameText;
+    private AutoCompleteTextView mGroupText;
     private Button mLoginButton;
+    private Spinner mGroupsSpinner;
     private View mProgressView;
     private View mLoginFormView;
-
-    boolean everythingOk = false;
-    TaskManager tasks;
-
-    TCPService service;
-    TCPService.Connection connection;
+    private static int REQUEST_CODE_LOCATION = 0;
+    private Timer mLoginTimer;
+    private boolean loginSucceeded = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,283 +39,167 @@ public class LoginActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_login);
 
-        // setup service and connect to server
-        connection = new TCPService.Connection();
-        Intent intent = new Intent(this, TCPService.class);
-        startService(intent);
-        bindService(intent, connection, 0);
-
-        service = connection.getService();
-
-        // Set up the login form.
         mUsernameText = (AutoCompleteTextView) findViewById(R.id.username);
+        mGroupText = (AutoCompleteTextView) findViewById(R.id.group);
 
         mLoginButton = (Button) findViewById(R.id.login_button);
         mLoginButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                tryLogin();
+                if(Controller.getInstance().isConnected()) {
+                    tryLogin();
+                } else {
+                    Controller.getInstance().bindService(new Intent(LoginActivity.this, TCPService.class));
+                }
             }
         });
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item) {
+        mGroupsSpinner = (Spinner) findViewById(R.id.groups_spinner);
+        mGroupsSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if(mGroupsSpinner.getCount() > 1 || !mGroupsSpinner.getSelectedItem().toString().equals(getString(R.string.no_existing_groups)))
+                    mGroupText.setText(mGroupsSpinner.getSelectedItem().toString());
+            }
 
             @Override
-            public View getView(int position, View convertView, ViewGroup parent) {
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
 
-                View v = super.getView(position, convertView, parent);
-                if (position == getCount()) {
-                    ((TextView)v.findViewById(android.R.id.text1)).setText("");
-                    ((TextView)v.findViewById(android.R.id.text1)).setHint(getItem(getCount())); //"Hint to be displayed"
+        (findViewById(R.id.refresh_button)).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(Controller.getInstance().isConnected()) {
+                    Controller.getInstance().requestGroups();
+                } else {
+                    Controller.getInstance().bindService(new Intent(LoginActivity.this, TCPService.class));
                 }
-
-                return v;
             }
+        });
 
-            @Override
-            public int getCount() {
-                return super.getCount(); // you don't display last item. It is used as hint.
+        // for test cases
+        String memberName = "Simon";
+        String group = "Test Group";
+
+        Controller.getInstance().setListener(this);
+        Controller.getInstance().bindService(new Intent(this, TCPService.class));
+
+        if(!hasPermissions()) {
+            requestPermissions();
+        } else {
+            if (!Controller.getInstance().isConnected()){
+                showAnimation(true);
+            } else {
+                memberName = Controller.getInstance().getMemberName();
+                Controller.getInstance().requestGroups();
             }
+        }
 
-        };
-
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        adapter.add("Groups");
-        adapter.add("Item 1");
-        adapter.add("Item 2");
-        adapter.add("Item 3");
-        adapter.add("Item 4");
-        adapter.add("Item 5");
-
-        Spinner spinner = (Spinner) findViewById(R.id.groups_spinner);
-        spinner.setAdapter(adapter);
-
-        tryLogin();
+        mUsernameText.setText(memberName);
+        if(mGroupText.getText().toString().isEmpty()) {
+            mGroupText.setText(group);
+        }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
 
-        Log.e("REQUEST CODE", String.valueOf(requestCode));
-
-        for (String n : permissions) {
-            Log.e("PERMISSIONS", n);
-        }
-
-        for (int n : grantResults) {
-            Log.e("GRANT RESULTS", String.valueOf(n));
-
-
-        }
-        everythingOk = true;
-
-        if (everythingOk) {
-            showProgress(true);
-            tasks = new TaskManager();
-            tasks.start();
-            tasks.addTask(new Runnable() {
-                boolean running = true;
-
-                @Override
-                public void run() {
-                    while (running) {
-                        try {
-
-                            if (service == null) {
-                                service = connection.getService();
-                                Thread.sleep(1000);
-                                Log.e("LOL", "sleeping more");
+        if(requestCode == REQUEST_CODE_LOCATION) {
+            if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
+                askUser("", getString(R.string.rationale_location_permissions),
+                        new Runnable() {    // if clicked yes
+                            @Override
+                            public void run() {
+                                requestPermissions();
                             }
-                            else {
-
-                                Log.e("LOL", "trying to get groups");
-
-                                StringWriter stringWriter = new StringWriter();
-                                JsonWriter writer = new JsonWriter(stringWriter);
-                                writer.beginObject()
-                                        .name("type").value("groups")
-                                        .endObject();
-                                String res = stringWriter.toString();
-                                service.send(res);
-
-
-                                mProgressView.animate().cancel();
-
-                                running = false;
+                        }, new Runnable() {
+                            @Override
+                            public void run() {     // if clicked no
+                                Controller.getInstance().disconnect();
+                                finish();
                             }
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-
-                    while(TCPService.grpList == null) {
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-
-                    showProgress(false);
-
-
-                }
-            });
+                        });
+            } else {
+                showAnimation(true);
+            }
         }
     }
-
-
 
     /**
      * Tries to login the user.
      */
     private void tryLogin() {
+        if(mUsernameText.getText().length() == 0) {
+            mUsernameText.setError(getString(R.string.error_empty_field));
+            mUsernameText.requestFocus();
+        } else if (mGroupText.getText().length() == 0) {
+            mGroupText.setError(getString(R.string.error_empty_field));
+            mGroupText.requestFocus();
+        } else {
 
-        // if the user hasn't turned on internet or location settings, warn them and turn the app off
-        // TODO: I want to be able to ask the user to change settings here as well
-        if(!hasInternet()) {
+            Controller.getInstance().register(mUsernameText.getText().toString(), mGroupText.getText().toString());
+            getCurrentFocus().clearFocus();
+            showAnimation(true);
 
-            // send an alert dialog to the user and close the app
-            notifyUser("NO INTERNET CONNECTION", "The app will not work without internet! Please connect to the internet before using this app.", new Runnable() {
-
+            mLoginTimer = new Timer();
+            mLoginTimer.schedule(new TimerTask() {
                 @Override
                 public void run() {
-                    Toast.makeText(LoginActivity.this, "OK", Toast.LENGTH_SHORT).show();
 
-                    // if user haven't given permission to use location, disallow login
-                    if (!hasPermissions()) {
-
-                        requestPermissions();
-
-                        if(!hasPermissions()) {
-
-                            // send an alert dialog to the user and close the app
-                            notifyUser("NO LOCATION PERMISSIONS", "The app will not work without permissions! Please enable location permissions before using this app.", null, null);
-                        }
-
-                        everythingOk = true;
+                    if(loginSucceeded) {
+                        return;
                     }
-                }
-            }, new Runnable() {
-                @Override
-                public void run() {
 
-                    finish();
+                    LoginActivity.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            showAnimation(false);
+                            notifyUser("ERROR", getString(R.string.error_connecting), new Runnable() {
+                                @Override
+                                public void run() {
+                                    Controller.getInstance().requestGroups();
+                                }
+                            }, null);
+                        }
+                    });
                 }
-            });
-
+            }, TCPService.CONNECTION_TIMEOUT);
         }
-        //mLoginTask = new LoginTask(this, mUsernameText.getText().toString());
-        //mLoginTask.execute((Void) null);
     }
 
-    /**
-     * Shows the login progress, though it is simulated to take 2 seconds.
-     */
-    public void showProgress(final boolean show) {
-
-        // clear focus
-
-        Log.e("LOL", "show progress");
-
-        mProgressView.animate().alpha(show ? 1 : 0).withStartAction(new Runnable() {
+    public void showAnimation(final boolean _AnimationEnabled) {
+        mProgressView.animate().alpha(_AnimationEnabled ? 1 : 0).withStartAction(new Runnable() {
             @Override
             public void run() {
 
-                Log.e("LOL", "start action");
                 mUsernameText.clearFocus();
 
-                mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-                mLoginFormView.setAlpha(show ? 0.5f : 1.0f);
-                mLoginButton.setEnabled(!show);
-                mUsernameText.setEnabled(!show);
-            }
-        }).withEndAction(new Runnable() {
-            @Override
-            public void run() {
-                Log.e("LOL", "end action");
-                Toast.makeText(LoginActivity.this, "lol", Toast.LENGTH_SHORT).show();
-
-                if(TCPService.grpList != null) {
-                    ArrayAdapter<String> adapter = new ArrayAdapter<String>(LoginActivity.this, android.R.layout.simple_spinner_dropdown_item) {
-
-                        @Override
-                        public View getView(int position, View convertView, ViewGroup parent) {
-
-                            View v = super.getView(position, convertView, parent);
-                            if (position == getCount()) {
-                                ((TextView)v.findViewById(android.R.id.text1)).setText("");
-                                ((TextView)v.findViewById(android.R.id.text1)).setHint(getItem(getCount())); //"Hint to be displayed"
-                            }
-
-                            return v;
-                        }
-
-                        @Override
-                        public int getCount() {
-                            return super.getCount(); // you don't display last item. It is used as hint.
-                        }
-
-                    };
-
-                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
-                    ArrayList<String> grps = TCPService.grpList;
-
-                    if(grps.size() == 0) {
-                        Log.e("OMG", "LIST EMPTY");
-                        for(int i = 0; i < 5; ++i) {
-                            adapter.add(String.valueOf(i));
-                        }
-                    } else {
-                        Log.e("OMG", "LIST IS NOT EMPTY");
-                        for(String n : grps) {
-                            adapter.add(n);
-                        }
-                    }
-
-                    Spinner spinner = (Spinner) findViewById(R.id.groups_spinner);
-                    spinner.setAdapter(adapter);
-                }
+                mProgressView.setVisibility(_AnimationEnabled ? View.VISIBLE : View.GONE);
+                mLoginFormView.setAlpha(_AnimationEnabled ? 0.5f : 1.0f);
+                mLoginButton.setEnabled(!_AnimationEnabled);
+                mUsernameText.setEnabled(!_AnimationEnabled);
             }
         });
-
-    }
-
-    /**
-     * Called by LoginTask when the login was successful.
-     * Starts MainActivity and destroys this (LoginActivity).
-     */
-    public void loginSuccess() {
-        Intent intent = new Intent(this, MainActivity.class);
-        startActivity(intent);
-        bindService(intent, connection, 0);
-        finish();
     }
 
     private boolean hasPermissions() {
         return ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
     }
 
-    private boolean hasInternet() {
-        LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        return lm.isProviderEnabled(LOCATION_SERVICE) && lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-    }
-
     private void requestPermissions() {
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 0);
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE_LOCATION);
     }
 
     private void notifyUser(String title, String message, final Runnable onOk, final Runnable onCancel) {
+
         AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(this);
         dlgAlert.setMessage(message);
         dlgAlert.setTitle(title);
-        dlgAlert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+        dlgAlert.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if(onOk != null)
@@ -347,7 +207,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
         if(onCancel != null) {
-            dlgAlert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            dlgAlert.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     onCancel.run();
@@ -355,5 +215,72 @@ public class LoginActivity extends AppCompatActivity {
             });
         }
         dlgAlert.create().show();
+    }
+
+    private void askUser(String title, String message, final Runnable onYes, final Runnable onNo) {
+
+        AlertDialog.Builder askDialog  = new AlertDialog.Builder(this);
+        askDialog.setTitle(title);
+        askDialog.setMessage(message);
+        askDialog.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                onYes.run();
+            }
+        });
+        askDialog.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                onNo.run();
+            }
+        });
+        askDialog.create().show();
+    }
+
+    @Override
+    public void onGroupsReceived(final ArrayList<String> groups) {
+
+        if(groups.size() == 0)
+            groups.add(getString(R.string.no_existing_groups));
+
+        final ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, groups);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mGroupsSpinner.setAdapter(adapter);
+                showAnimation(false);
+            }
+        });
+    }
+
+    @Override
+    public void onConnected() {
+        Controller.getInstance().requestGroups();
+    }
+
+    @Override
+    public void onRegistered(String id) {
+        loginSucceeded = true;
+        if(mLoginTimer != null) {
+            mLoginTimer.cancel();
+            mLoginTimer = null;
+        }
+        Controller.getInstance().unbindService();
+        Intent intent = new Intent(this, MapActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
+    @Override
+    public void onErrorReceived(final String _Message) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                showAnimation(false);
+                notifyUser(getString(R.string.error), _Message, null, null);
+            }
+        });
     }
 }

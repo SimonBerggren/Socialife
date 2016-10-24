@@ -1,37 +1,28 @@
 <resources>
     <string name="app_name">Socialife</string>
-    <string name="title_activity_login">Sign in</string>
-
-    <!-- Strings related to login -->
-    <string name="username">Username</string>
-    <string name="prompt_password">Password</string>
-    <string name="action_sign_in">Sign in or register</string>
-    <string name="action_sign_in_short">Sign in</string>
-    <string name="error_invalid_email">This email address is invalid</string>
-    <string name="error_invalid_password">This password is too short</string>
-    <string name="error_incorrect_password">This password is incorrect</string>
-    <string name="error_field_required">This field is required</string>
-    <string name="permission_rationale">"Contacts permissions are needed for providing email
-        completions."
-    </string>
     <string name="title_activity_map">Map</string>
-    <string name="title_activity_main">MainActivity</string>
 
-    <string name="navigation_drawer_open">Open navigation drawer</string>
-    <string name="navigation_drawer_close">Close navigation drawer</string>
-
-    <string name="action_settings">Settings</string>
-    <string name="settings">Settings</string>
-    <string name="profile">Share</string>
-    <string name="edit">Edit</string>
-    <string name="chat">Chat</string>
-    <string name="register">Register</string>
+    <string name="username">Username</string>
     <string name="login">login</string>
-    <string name="firstname">First name</string>
-    <string name="lastname">Last Name</string>
-    <string name="email">Email</string>
-    <string name="confirmemail">Confirm Email</string>
-    <string name="password">Password</string>
-    <string name="confirmpassword">Confirm password</string>
+    <string name="logout">Logout</string>
+
+    <string name="error_empty_field">This field is required!</string>
+    <string name="error_not_connected">Not connected to server.</string>
+    <string name="error_cannot_connect">Unable to connect to the server.</string>
+    <string name="error_cannot_read">Unable to read from the server.</string>
+
+    <string name="settings">Settings</string>
+
+    <string name="group">Group</string>
+    <string name="groups">Groups</string>
+    <string name="no_existing_groups">No existing groups</string>
+    <string name="google_maps_key">AIzaSyCSltjbvZJUWA--Wwi8KP0kS-OKFN3fzSY</string>
+    <string name="warning_usage">Don\'t use this app!</string>
     <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="error">ERROR</string>
+    <string name="rationale_location_permissions">The app will not work without permissions. Do you want to enable location permissions?</string>
+    <string name="error_connecting">Something went wrong! If the problem persist, try with another username.</string>
 </resources>

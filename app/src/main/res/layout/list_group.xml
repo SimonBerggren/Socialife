@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!--<Button-->
+        <!--android:id="@+id/join_button"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="Join"-->
+        <!--android:textSize="@dimen/text_size_medium_small"-->
+        <!--android:background="@color/LightGreen"/>-->
+    <!--<Button-->
+        <!--android:id="@+id/leave_button"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="Leave"-->
+        <!--android:textSize="@dimen/text_size_medium_small"-->
+        <!--android:background="@color/LightRed"/>-->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/group_title"
+        android:layout_marginStart="@dimen/margin_large"
+        android:textSize="@dimen/text_size_medium_small"
+        />
+</LinearLayout>

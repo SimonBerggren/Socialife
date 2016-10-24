@@ -1,0 +1,28 @@
+<resources>
+    <string name="app_name">Socialife</string>
+    <string name="title_activity_map">Karta</string>
+
+    <string name="username">Användarnamn</string>
+    <string name="login">Logga in</string>
+    <string name="logout">Logga ut</string>
+
+    <string name="error_empty_field">Vänligen fyll i detta fält!</string>
+    <string name="error_not_connected">Ej ansluten till servern.</string>
+    <string name="error_cannot_connect">Servern är ej tillgänglig.</string>
+    <string name="error_cannot_read">Kan ej läsa från servern.</string>
+
+    <string name="settings">Inställningar</string>
+
+    <string name="group">Grupp</string>
+    <string name="groups">Grupper</string>
+    <string name="no_existing_groups">Inga existerande grupper</string>
+    <string name="google_maps_key">AIzaSyCSltjbvZJUWA--Wwi8KP0kS-OKFN3fzSY</string>
+    <string name="warning_usage">Använd ej denna app!</string>
+    <string name="cancel">Avbryt</string>
+    <string name="ok">OK</string>
+    <string name="yes">Ja</string>
+    <string name="no">Nej</string>
+    <string name="error">FEL</string>
+    <string name="rationale_location_permissions">Appen fungerar inte utan tillgång till position. Vill du ge appen tillgång till din position?</string>
+    <string name="error_connecting">Något gick snett! Försök igen. Kvarstår felet, förök med ett annat användarnamn.</string>
+</resources>

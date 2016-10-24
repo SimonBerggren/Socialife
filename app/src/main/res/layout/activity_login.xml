@@ -1,4 +1,5 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -10,6 +11,8 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.berggrentech.socialife.LoginActivity"
     android:animateLayoutChanges="true"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
     >
 
     <ScrollView
@@ -22,7 +25,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            >
+            android:weightSum="1">
             <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -32,11 +35,22 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/username"
-                    android:inputType="textEmailAddress"
                     android:maxLines="1"
-                    android:textAlignment="center"
                     />
+
             </android.support.design.widget.TextInputLayout>
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                >
+            <AutoCompleteTextView
+                android:id="@+id/group"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/group"
+                android:maxLines="1"
+                />
+        </android.support.design.widget.TextInputLayout>
             <!-- Login progress -->
             <ProgressBar
                 android:id="@+id/login_progress"
@@ -52,22 +66,41 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 >
+
                 <Button
                     android:id="@+id/login_button"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
+                    android:layout_height="match_parent"
+                    android:layout_weight="2"
                     android:text="@string/login"
                     />
+
                 <Spinner
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:id="@+id/groups_spinner"
-                    android:layout_weight="1"
+                    android:layout_weight="3"
                     style="@style/Base.Widget.AppCompat.Button"
 
+                    android:elevation="1dp"
                     />
+
+                <ImageButton
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    style="@style/Base.Widget.AppCompat.Button"
+                    app:srcCompat="@drawable/quantum_ic_refresh_white_24"
+                    android:id="@+id/refresh_button"
+                    android:layout_weight="1" />
+
             </LinearLayout>
+
+            <ImageView
+                android:id="@+id/image"
+                android:layout_width="match_parent"
+                android:layout_height="403dp"
+                app:srcCompat="@drawable/socialife_original"
+                />
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

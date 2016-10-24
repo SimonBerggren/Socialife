@@ -30,8 +30,8 @@
             android:value="@string/google_maps_key"
             />
         <activity
-            android:name=".MainActivity"
-            android:label="@string/title_activity_main"
+            android:name=".MapActivity"
+            android:label="@string/title_activity_map"
             android:theme="@style/AppTheme.NoActionBar"
             />
         <service android:name=".TCPService" android:enabled="true"/>

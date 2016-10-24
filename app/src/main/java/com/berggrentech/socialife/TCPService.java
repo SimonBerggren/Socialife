@@ -1,6 +1,5 @@
 package com.berggrentech.socialife;
 
-import android.app.ListActivity;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -15,11 +14,12 @@ import org.json.JSONObject;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.ResourceBundle;
 
 /**
  * Created by Simon Berggren for assignment 2 in the course Development of Mobile Devices.
@@ -27,35 +27,9 @@ import java.util.List;
 
 public class TCPService extends Service {
 
-    public static class Connection implements ServiceConnection {
-
-        TCPService service;
-
-        public TCPService getService() {
-            return service;
-        }
-
-        public void onServiceConnected(ComponentName arg0, IBinder binder) {
-            TCPService.LocalService ls = (TCPService.LocalService) binder;
-            service = ls.getService();
-            service.connect();
-        }
-
-        public void onServiceDisconnected(ComponentName arg0) {
-        }
-    }
-
-    public static ArrayList<String> grpList;
-
-    String register = "register";
-    String unregister = "unregister";
-    String members = "members";
-    String groups = "groups";
-    String location = "location";
-    String locations = "locations";
-
-    public static final String IP="195.178.227.53";
-    public static final int PORT=7117; //
+    public static final int CONNECTION_TIMEOUT = 5000;
+    public static final String IP = "195.178.227.53";
+    public static final int PORT = 7117;
 
     private Socket socket;
     private TaskManager oThread;
@@ -64,25 +38,26 @@ public class TCPService extends Service {
     private DataOutputStream oStream;
     private volatile boolean running = false;
 
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        socket = new Socket();
-        oThread = new TaskManager();
-        iThread = new TaskManager();
-        return Service.START_STICKY;
+    boolean isConnected() {
+        return socket != null && socket.isConnected();
     }
 
     /**
      * Connects to the server via TCP.
      * Starts two threads - one for input and one for output.
      */
-    public void connect() {
+    void connect() {
 
         // don't start a new connection if we already have one
-        if(running)
+        if(running) {
             return;
+        }
 
         running = true;
+
+        socket = new Socket();
+        oThread = new TaskManager();
+        iThread = new TaskManager();
 
         // start thread handling output, sending messages to server
         oThread.start();
@@ -91,7 +66,10 @@ public class TCPService extends Service {
             public void run() {
                 try {
 
-                    socket.connect(new InetSocketAddress(InetAddress.getByName(IP), PORT), 10000);
+                    socket.connect(new InetSocketAddress(InetAddress.getByName(IP), PORT), CONNECTION_TIMEOUT);
+
+                    Controller.getInstance().onConnected();
+
                     iStream = new DataInputStream(socket.getInputStream());
                     oStream = new DataOutputStream(socket.getOutputStream());
                     oStream.flush();
@@ -103,62 +81,71 @@ public class TCPService extends Service {
 
                         @Override
                         public void run() {
-                            try {
-                                while (running) {
+                            while (running) {
+                                try {
 
                                     String result = iStream.readUTF();
-
                                     JSONObject obj = new JSONObject(result);
-                                    String type = obj.getString("type");
 
                                     Log.e("RECEIVED FROM SERVER", obj.toString());
-                                    Log.e("TYPE FROM SERVER", type);
 
-                                    if(type.equals(register)) {
+                                    String type = obj.getString("type");
+                                    switch (type) {
+                                        case "register":
 
-                                        String group = obj.getString("group");
-                                        String id = obj.getString("id");
+                                            String id = obj.getString("id");
 
-                                        Log.e("RECEIVED FROM SERVER", "Added user to group " + group + " giving you an id of " + id);
+                                            Controller.getInstance().onRegister(id);
 
-                                    } else if(type.equals(unregister)) {
-                                        // ignore
-                                    } else if(type.equals(members)) {
+                                            break;
+                                        case "groups":
 
-                                    } else if(type.equals(groups)) {
+                                            JSONArray groups = obj.getJSONArray("groups");
 
-                                        JSONArray groups = obj.getJSONArray("groups");
+                                            ArrayList<String> grpList = new ArrayList<>();
 
-                                        if(groups.length() == 0) {
-                                            Log.e("RECEIVED FROM SERVER", "THERE ARE NO GROUPS");
-                                       } else {
-                                            Log.e("RECEIVED FROM SERVER", String.valueOf(groups.length()) + " GROUPS FOUND");
-                                        }
+                                            for (int i = 0; i < groups.length(); ++i) {
+                                                JSONObject group = groups.getJSONObject(i);
+                                                String name = group.getString("group");
+                                                grpList.add(name);
+                                            }
 
-                                        grpList = new ArrayList<String>();
+                                            Controller.getInstance().onGroupsReceived(grpList);
 
-                                        for (int i = 0; i < groups.length(); ++i) {
-                                            Log.e("JNIPOUSDFJHOIJHSD", "fdsöjofrndsahfhdsaökl");
+                                            break;
+                                        case "locations":
 
-                                            JSONObject group = groups.getJSONObject(i);
-                                            String name = group.getString("group");
-                                            grpList.add(name);
-                                            Log.e("JSON Group Name", name);
-                                        }
-                                    } else if(type.equals(location)) {
-                                        // ignore
-                                    } else if(type.equals(locations)) {
+                                            String groupname = obj.getString("group");
+                                            JSONArray members = obj.getJSONArray("location");
+                                            ArrayList<Member> locations = new ArrayList<Member>();
 
+                                            for (int i = 0; i < members.length(); ++i) {
+                                                JSONObject member = members.getJSONObject(i);
+                                                String name = member.getString("member");
+                                                String lng = member.getString("longitude");
+                                                String lat = member.getString("latitude");
+                                                locations.add(new Member(name, lng, lat));
+                                            }
+
+                                            Controller.getInstance().onMembersUpdated(groupname, locations);
+                                            break;
                                     }
-
+                                } catch (IOException e) {
+                                    Controller.getInstance().onErrorReceived(getString(R.string.error_cannot_read));
+                                } catch (Exception e) { // IOException, ClassNotFoundException
+                                    Log.e("THREAD ERROR", e.getClass().toString());
+                                    Log.e("THREAD ERROR", e.getMessage());
                                 }
-                            } catch(Exception e){ // IOException, ClassNotFoundException
-
                             }
                         }
                     });
+                } catch (ConnectException e) {
+                    Controller.getInstance().onErrorReceived(getString(R.string.error_cannot_connect));
+                    disconnect();
                 } catch (Exception e) { // SocketException, UnknownHostException
-
+                    Log.e("CONNECTION ERROR", e.getClass().toString());
+                    Log.e("CONNECTION ERROR", e.getMessage());
+                    disconnect();
                 }
             }
         });
@@ -168,25 +155,38 @@ public class TCPService extends Service {
      * Closes all streams and sockets.
      * Stops all threads.
      */
-    public void disconnect() {  oThread.addTask(new Runnable() {
+    void disconnect() {
+
+        if(!running) {
+            Controller.getInstance().onErrorReceived(getString(R.string.error_not_connected));
+            return;
+        }
+
+        Log.e("SIMONS SAYS", "DISCONNECTING");
+        oThread.addTask(new Runnable() {
 
             @Override
             public void run() {
                 try {
-                    if (iStream != null)
+                    if (iStream != null) {
                         iStream.close();
-                    if (oStream != null)
+                        iStream = null;
+                    }
+                    if (oStream != null) {
                         oStream.close();
-                    if (socket != null)
+                        oStream = null;
+                    }
+                    if (socket != null) {
                         socket.close();
+                        socket = null;
+                    }
 
                     running = false;
 
                     oThread.stop();
                     iThread.stop();
 
-                } catch(IOException e) {
-                }
+                } catch(IOException ignored) { }
             }
         });
     }
@@ -194,17 +194,28 @@ public class TCPService extends Service {
     /**
      * Sends a message to the server.
      */
-    public void send(final String message) { oThread.addTask(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    oStream.writeUTF(message);
-                    oStream.flush();
-                    Log.e("SERVER MESSAGE", "SENT: " + message);
-                } catch (IOException e) {
-                }
+    void send(final String message) {
+
+        if(!running) {
+            Controller.getInstance().onErrorReceived(getString(R.string.error_not_connected));
+            return;
+        }
+
+        oThread.addTask(new Runnable() {
+        @Override
+        public void run() {
+            try {
+                oStream.writeUTF(message);
+                oStream.flush();
+            } catch (IOException e) {
             }
-        });
+        }
+    });
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        return Service.START_STICKY;
     }
 
     /**
@@ -218,6 +229,25 @@ public class TCPService extends Service {
     public class LocalService extends Binder {
         public TCPService getService() {
             return TCPService.this;
+        }
+    }
+
+    public static class Connection implements ServiceConnection {
+
+        private TCPService service;
+
+        TCPService getService() {
+            return service;
+        }
+
+        public void onServiceConnected(ComponentName arg0, IBinder binder) {
+            TCPService.LocalService ls = (TCPService.LocalService) binder;
+            service = ls.getService();
+            service.connect();
+        }
+
+        public void onServiceDisconnected(ComponentName arg0) {
+            Log.e("SERVICE STATUS", "DISCONNECTED");
         }
     }
 }
