@@ -3,7 +3,6 @@ package com.berggrentech.socialife;
 /**
  * Created by Simon Berggren for assignment 2 in the course Development of Mobile Devices.
  */
-
 class Member {
 
     private String mName = "";

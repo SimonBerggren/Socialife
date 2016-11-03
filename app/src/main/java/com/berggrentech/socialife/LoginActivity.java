@@ -21,6 +21,9 @@ import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
+/**
+ * Created by Simon Berggren for assignment 2 in the course Development of Mobile Devices.
+ */
 public class LoginActivity extends ActivityListener {
 
     private AutoCompleteTextView mUsernameText;

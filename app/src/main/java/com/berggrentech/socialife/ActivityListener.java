@@ -5,9 +5,8 @@ import android.support.v7.app.AppCompatActivity;
 import java.util.ArrayList;
 
 /**
- * Created by Simon on 2016-10-20.
+ * Created by Simon Berggren for assignment 2 in the course Development of Mobile Devices.
  */
-
 public class ActivityListener extends AppCompatActivity {
     public void onConnected() { }
 

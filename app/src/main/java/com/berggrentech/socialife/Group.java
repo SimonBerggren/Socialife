@@ -3,7 +3,7 @@ package com.berggrentech.socialife;
 import java.util.ArrayList;
 
 /**
- * Created by Simon on 2016-10-22.
+ * Created by Simon Berggren for assignment 2 in the course Development of Mobile Devices.
  */
 
 class Group {

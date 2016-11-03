@@ -24,7 +24,6 @@ import java.util.ResourceBundle;
 /**
  * Created by Simon Berggren for assignment 2 in the course Development of Mobile Devices.
  */
-
 public class TCPService extends Service {
 
     public static final int CONNECTION_TIMEOUT = 5000;
@@ -162,7 +161,7 @@ public class TCPService extends Service {
             return;
         }
 
-        Log.e("SIMONS SAYS", "DISCONNECTING");
+        Log.e("SIMON SAYS", "DISCONNECTING");
         oThread.addTask(new Runnable() {
 
             @Override

@@ -5,7 +5,6 @@ import java.util.LinkedList;
 /**
  * Created by Simon Berggren for assignment 2 in the course Development of Mobile Devices.
  */
-
 class TaskManager {
 
     private class Buffer<T> {

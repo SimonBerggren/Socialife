@@ -1,7 +1,7 @@
 package com.berggrentech.socialife;
 
 /**
- * Imported by Simon on 2016-10-21.
+ * Imported by Simon Berggren for assignment 2 in the course Development of Mobile Devices.
  */
 //public class EntryViewAdapterAnimation {}
 /*

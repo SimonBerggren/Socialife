@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.TimerTask;
 
 /**
- * Created by Simon on 2016-10-21.
+ * Created by Simon Berggren for assignment 2 in the course Development of Mobile Devices.
  */
 class GroupViewAdapter extends GroupViewAnimated.AnimatedExpandableListAdapter {
 

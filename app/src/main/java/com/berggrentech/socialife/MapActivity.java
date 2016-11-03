@@ -39,6 +39,9 @@ import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
+/**
+ * Created by Simon Berggren for assignment 2 in the course Development of Mobile Devices.
+ */
 public class MapActivity extends ActivityListener
         implements NavigationView.OnNavigationItemSelectedListener, OnMapReadyCallback, LocationListener, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks {
 
@@ -280,6 +283,7 @@ public class MapActivity extends ActivityListener
                 for(int i = 0; i < _Members.size(); ++i) {
                     MarkerOptions marker = new MarkerOptions();
                     marker.position(new LatLng(Double.parseDouble(_Members.get(i).getLat()), Double.parseDouble(_Members.get(i).getLong())));
+                    marker.title(_Members.get(i).getName());
                     mMap.addMarker(marker);
                 }
             }
